@@ -4,6 +4,7 @@
 
 int main(int argc, const char** argv) {
     uint16_t width(1024), height(768);
+
     if (argc > 0) {
         for (uint8_t i = 1; i < static_cast<uint8_t>(argc); i++) {
             switch (str2int(argv[i])) {
@@ -16,8 +17,8 @@ int main(int argc, const char** argv) {
                         uint16_t temp_width = std::stoi(square_width);
                         uint16_t temp_height = std::stoi(square_height);
 
-                        float report = static_cast<float>(temp_width) / static_cast<float>(temp_height);
-                        bool rep_condition = (temp_width >= 200) && (temp_height >= 200) && (0.5f < report) && (report < 2.f);
+                        float ratio = static_cast<float>(temp_width) / static_cast<float>(temp_height);
+                        bool rep_condition = (temp_width >= 200) && (temp_height >= 200) && (0.5f < ratio) && (ratio < 2.f);
 
                         if (rep_condition) {
                             width = temp_width;
@@ -36,16 +37,16 @@ int main(int argc, const char** argv) {
             }
             case str2int("-h"):
             case str2int("--help"): {
-                // std::cout << "Usage:" << std::endl
-                //           << "\tAeroFly [OPTIONS...]" << std::endl
-                //           << "Options:" << std::endl
-                //           << "\t-h, --help\t\t\t\tDisplay this help dialog" << std::endl
-                //           << "\t-d, --display <width> <height>\t\tSet custom window size" << std::endl
-                //           << "\t-m, --map <filename.ext>\t\tUse custom file for Map generation" << std::endl
-                //           << "\t-f, --forecast <filename.ext>\t\tUse custom file for Forecast generation" << std::endl
-                //           << std::endl;
-            }
+                std::cout << "Usage:" << std::endl
+                          << "\tDurak-SFML [OPTIONS...]" << std::endl
+                          << "Options:" << std::endl
+                          << "\t-h, --help\t\t\t\tDisplay this help" << std::endl
+                          << "\t-d, --display <width> <height>\t\tSet custom window size" << std::endl
+                          << "\t-t, --type <server/client>\t\tSet player type" << std::endl
+                          << "\t-i, --ip <wi-fi IPv4 Address>\t\tSet IP Adress (for client mode)" << std::endl
+                          << std::endl;
                 return 0;
+            }
             }
         }
     }
