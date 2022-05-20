@@ -1,9 +1,9 @@
 #include "app.h"
 
 #include "tcp.h"
+#include "valid_input.h"
+
 #include <cmath>
-#include <fstream>
-#include <functional>
 #include <thread>
 
 // Creating the object
@@ -22,8 +22,8 @@ int8_t Application::start() {
     window.setPosition(sf::Vector2<int>(20, 40));
 
     // scale backround
-    sf::Vector2<unsigned int> texture_size;
-    sf::Vector2<unsigned int> window_size;
+    sf::Vector2<uint32_t> texture_size;
+    sf::Vector2<uint32_t> window_size;
     sf::Texture texture;
 
     texture.setSmooth(true);
@@ -43,63 +43,65 @@ int8_t Application::start() {
     }
     // end scaling
 
-    char mode = 'n';
     sf::IpAddress serverIp;
-
+    int packet_counter(0);
+    sf::Clock PacketClock;
     std::string str_mode;
 
-    while (!(mode == 'C' || mode == 'S' || mode == 'c' || mode == 's')) {
-        std::cout << "[S]erver or [C]lient?\n";
-        std::cin >> mode;
+    validate_input(str_mode, serverIp);
 
-        if (!(mode == 'C' || mode == 'S' || mode == 'c' || mode == 's')) {
-            std::cout << "Invalid." << std::endl;
-        }
-    }
-    if (mode == 'C' || mode == 'c') {
-        str_mode = "client";
-        do {
-            std::cout << "Type the address or name of the server to connect to: ";
-            std::cin >> serverIp;
-        } while (serverIp == sf::IpAddress::None);
-    }
-    if (mode == 'S' || mode == 's') {
-        str_mode = "server";
-    }
-    while (!(mode == 'C' || mode == 'S' || mode == 'c' || mode == 's')) {
-        std::cout << "[S]erver or [C]lient?\n";
-        std::cin >> mode;
+    TCP::Server server;
+    TCP::Client client;
 
-        if (!(mode == 'C' || mode == 'S' || mode == 'c' || mode == 's')) {
-            std::cout << "Invalid." << std::endl;
-        }
+    if (str_mode == "server") {
+        std::thread server_listener(&TCP::Server::listen, &server);
+        server_listener.join();
+    } else {
+        std::thread client_listener(&TCP::Client::listen, &client);
+        TCP::socket.connect(serverIp, TCP::port);
+        client_listener.join();
     }
 
-    std::cout << "Selected mode: " << str_mode << std::endl;
+    if (str_mode == "server") {
+        while (!TCP::client_connected) {}
+    }
 
-    // std::function<void(TCP::Server&)> listen_server = &TCP::Server::listen;
-    // std::function<void(TCP::Client&)> listen_client = &TCP::Client::listen;
-
-    TCP::Server listen_server;
-    TCP::Client listen_client;
-    std::thread server(&TCP::Server::listen, &listen_server);
-    std::thread client(&TCP::Client::listen, &listen_client);
-
-    server.join();
-    client.join();
-
-    // sf::Thread TCPserverListenerThread(&listen_server);
-    // sf::Thread TCPclientListenerThread(&listen_client);
-
+    std::string data;
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) window.close();
+            if (event.type == sf::Event::Closed) {
+                TCP::quit = true;
+                window.close();
+            }
         }
 
         window.clear();
         window.draw(background);
         window.display();
+
+        if (str_mode == "server") {
+            if (PacketClock.getElapsedTime().asSeconds() >= 1) {
+                packet_counter = 0;
+                PacketClock.restart();
+            } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33) > packet_counter) {
+                server.get() << data;
+                server.send();
+                std::cout << data + "_" + str_mode;
+
+                packet_counter++;
+            }
+        } else {
+            if (PacketClock.getElapsedTime().asSeconds() >= 1) {
+                packet_counter = 0;
+                PacketClock.restart();
+            } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33) > packet_counter) {
+                client.get() << data;
+                client.send();
+                std::cout << data + "_" + str_mode;
+                packet_counter++;
+            }
+        }
     }
 
     return 0;

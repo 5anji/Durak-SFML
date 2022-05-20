@@ -35,6 +35,12 @@ int main(int argc, const char** argv) {
                 }
                 break;
             }
+            case str2int("-t"):
+            case str2int("--type"):
+                break;
+            case str2int("-i"):
+            case str2int("--ip"):
+                break;
             case str2int("-h"):
             case str2int("--help"): {
                 std::cout << "Usage:" << std::endl

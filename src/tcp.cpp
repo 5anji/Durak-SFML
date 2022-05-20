@@ -1,12 +1,15 @@
 #include "tcp.h"
 
 #include <iostream>
+
 namespace TCP {
 sf::Mutex mutex;
 sf::TcpSocket socket;
-extern bool quit = false;
+bool quit = false;
 bool client_connected = false;
+const int port = 50001;
 }  // namespace TCP
+
 TCP::Server::Server() {
     // fun_ptr = &TCP::Server::listen;
 }
@@ -14,7 +17,7 @@ TCP::Server::Server() {
 void TCP::Server::listen() {
     std::cout << "Listening for clients." << std::endl;
     sf::TcpListener listener;
-    listener.listen(50001);
+    listener.listen(port);
     listener.accept(TCP::socket);
     std::cout << "New client connected: " << TCP::socket.getRemoteAddress() << std::endl;
     TCP::client_connected = true;
@@ -44,6 +47,14 @@ void TCP::Server::send() {
     }
 }
 
+sf::Packet& TCP::Server::get() {
+    return packet;
+}
+
+void TCP::Server::set(sf::Packet& copy) {
+    packet = copy;
+}
+
 TCP::Client::Client() {
     // fun_ptr = &TCP::Client::listen;
 }
@@ -71,4 +82,13 @@ void TCP::Client::send() {
         packet.clear();
         TCP::mutex.unlock();
     }
+}
+
+
+sf::Packet& TCP::Client::get() {
+    return packet;
+}
+
+void TCP::Client::set(sf::Packet& copy) {
+    packet = copy;
 }
