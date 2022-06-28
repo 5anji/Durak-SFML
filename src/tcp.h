@@ -1,36 +1,47 @@
 #pragma once
+#include "listener.h"
+#include "sender.h"
 
+#include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
+#include <cmath>
+#include <iostream>
+#include <string>
+#include <ctime>
 
 namespace TCP {
-extern sf::Mutex mutex;
-extern sf::TcpSocket socket;
-extern bool quit;
-extern bool client_connected;
-extern const int port;
+sf::IpAddress serverIp;
+const int port = 50001;
 
-class Server {
-    sf::Packet packet;
+sf::TcpSocket socket;
 
-public:
-    Server();
-    void listen();
-    void send();
-    sf::Packet& get();
-    void set(sf::Packet&);
-    // ~Server();
-};
+sf::Mutex globalMutex;
+sf::Packet serverPacket;
+sf::Packet clientPacket;
+std::string dt;
+bool quit = false;
+bool connected = false;
 
-class Client {
-    sf::Packet packet;
+void ServerListener() {
+    std::cout << "Listening for clients." << std::endl;
+    sf::TcpListener listener;
+    listener.listen(port);
+    listener.accept(socket);
+    std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
+    connected = true;
+    
+    listen(quit, clientPacket, globalMutex, socket, dt);
+}
 
-public:
-    Client();
-    void listen();
-    void send();
-    sf::Packet& get();
-    void set(sf::Packet&);
-    // ~Client();
-};
+void ClientListener() {
+    listen(quit, serverPacket, globalMutex, socket, dt);
+}
 
+void ServerSend() {
+    send(serverPacket, globalMutex, socket);
+}
+
+void ClientSend() {
+    send(clientPacket, globalMutex, socket);
+}
 }  // namespace TCP

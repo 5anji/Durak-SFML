@@ -1,11 +1,11 @@
 #include "app.h"
 
+#include "cards.h"
 #include "tcp.h"
 #include "valid_input.h"
 
 #include <cmath>
 #include <thread>
-
 // Creating the object
 Application::Application(uint16_t width, uint16_t height)
         : video_mode(width, height)
@@ -17,7 +17,37 @@ Application::Application(uint16_t width, uint16_t height)
 
 // Starting the main window
 int8_t Application::start() {
-    sf::RenderWindow window(video_mode, title, style, settings);
+    std::string str_mode;
+
+    validate_input(str_mode, TCP::serverIp);
+
+    sf::Thread TCPserverListenerThread(&TCP::ServerListener);
+    sf::Thread TCPclientListenerThread(&TCP::ClientListener);
+
+    sf::Clock Clock;
+    sf::Clock PacketClock;
+    int packet_counter = 0;
+
+    sf::Time time;
+
+    std::string command = "";
+
+    if (str_mode == "server") {
+        TCPserverListenerThread.launch();
+    } else {
+        TCP::socket.connect(TCP::serverIp, TCP::port);
+        TCPclientListenerThread.launch();
+    }
+
+    if (str_mode == "server") {
+        while (!TCP::connected) {}
+    }
+
+    Cards it(1);
+    time_t now;
+    std::string dt;
+
+    sf::RenderWindow window(video_mode, std::string(title) + " [" + str_mode + "]", style, settings);
     window.setFramerateLimit(48);
     window.setPosition(sf::Vector2<int>(20, 40));
 
@@ -43,37 +73,21 @@ int8_t Application::start() {
     }
     // end scaling
 
-    sf::IpAddress serverIp;
-    int packet_counter(0);
-    sf::Clock PacketClock;
-    std::string str_mode;
-
-    validate_input(str_mode, serverIp);
-
-    TCP::Server server;
-    TCP::Client client;
-
-    if (str_mode == "server") {
-        std::thread server_listener(&TCP::Server::listen, &server);
-        server_listener.join();
-    } else {
-        std::thread client_listener(&TCP::Client::listen, &client);
-        TCP::socket.connect(serverIp, TCP::port);
-        client_listener.join();
-    }
-
-    if (str_mode == "server") {
-        while (!TCP::client_connected) {}
-    }
-
-    std::string data;
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 TCP::quit = true;
+                if (str_mode == "server")
+                    TCPserverListenerThread.terminate();
+                else
+                    TCPclientListenerThread.terminate();
                 window.close();
             }
+        }
+        if (str_mode == "server") {
+        } else {  
+
         }
 
         window.clear();
@@ -85,9 +99,11 @@ int8_t Application::start() {
                 packet_counter = 0;
                 PacketClock.restart();
             } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33) > packet_counter) {
-                server.get() << data;
-                server.send();
-                std::cout << data + "_" + str_mode;
+                now = ::time(0);
+                dt = ctime(&now);
+
+                TCP::serverPacket << dt;
+                TCP::ServerSend();
 
                 packet_counter++;
             }
@@ -96,14 +112,14 @@ int8_t Application::start() {
                 packet_counter = 0;
                 PacketClock.restart();
             } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33) > packet_counter) {
-                client.get() << data;
-                client.send();
-                std::cout << data + "_" + str_mode;
+                // TCP::clientPacket << ' ';
+                // TCP::ClientSend();
                 packet_counter++;
             }
         }
-    }
 
+        time = Clock.restart();
+    }
     return 0;
 }
 
