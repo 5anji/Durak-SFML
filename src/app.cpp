@@ -5,7 +5,15 @@
 #include "valid_input.h"
 
 #include <cmath>
+#include <csignal>
+#include <functional>
 #include <thread>
+
+namespace {
+std::function<void(int)> shutdown_handler;
+void signalHandler(int n) { shutdown_handler(n); }
+}  // namespace
+
 // Creating the object
 Application::Application(uint16_t width, uint16_t height)
         : video_mode(width, height)
@@ -38,6 +46,21 @@ int8_t Application::start() {
         TCP::socket.connect(TCP::serverIp, TCP::port);
         TCPclientListenerThread.launch();
     }
+
+    signal(SIGINT, signalHandler);
+
+    shutdown_handler = [&](int n) {
+        if (n == 2) {
+            TCP::quit = true;
+            if (str_mode == "server")
+                TCPserverListenerThread.terminate();
+            else
+                TCPclientListenerThread.terminate();
+
+            std::cout << "Terminated threads";
+            exit(n);
+        }
+    };
 
     if (str_mode == "server") {
         while (!TCP::connected) {}
@@ -72,7 +95,11 @@ int8_t Application::start() {
         return -1;
     }
     // end scaling
-
+    sf::Texture card;
+    card.loadFromFile(it[1].get_filename());
+    sf::Sprite c;
+    c.setTexture(card);
+    c.setPosition(30, 30);
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -86,12 +113,12 @@ int8_t Application::start() {
             }
         }
         if (str_mode == "server") {
-        } else {  
-
+        } else {
         }
 
         window.clear();
         window.draw(background);
+        window.draw(c);
         window.display();
 
         if (str_mode == "server") {

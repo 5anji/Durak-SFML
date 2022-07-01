@@ -12,7 +12,6 @@ class Card {
     uint8_t suit_i;
 
 public:
-    Card();
     Card(uint8_t, uint8_t, bool);
     uint8_t get_priority();
     uint8_t get_suit();

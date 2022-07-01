@@ -13,10 +13,10 @@ Cards::Cards(uint8_t trump)
     }
 
     randomize();
-    
-    // for (size_t i = 0; i < 36; i++) {
-    //     std::cout << i + 1 << ") " << pack[i].get_filename() << " \t" << static_cast<int>(pack[i].get_priority()) << std::endl;
-    // }
+}
+
+Card Cards::operator[](uint8_t index) {
+    return pack[index];
 }
 
 inline void Cards::randomize() {

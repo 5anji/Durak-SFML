@@ -9,5 +9,6 @@ class Cards {
 
 public:
     Cards(uint8_t);
+    Card operator[](uint8_t);
     inline void randomize();
 };
