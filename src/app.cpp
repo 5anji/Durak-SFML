@@ -2,6 +2,7 @@
 
 #include "cards.h"
 #include "tcp.h"
+#include "ui/cardpack.h"
 #include "valid_input.h"
 
 #include <cmath>
@@ -29,8 +30,7 @@ int8_t Application::start() {
 
     validate_input(str_mode, TCP::serverIp);
 
-    sf::Thread TCPserverListenerThread(&TCP::ServerListener);
-    sf::Thread TCPclientListenerThread(&TCP::ClientListener);
+    sf::Thread* TCP_Listener;
 
     sf::Clock Clock;
     sf::Clock PacketClock;
@@ -41,23 +41,25 @@ int8_t Application::start() {
     std::string command = "";
 
     if (str_mode == "server") {
-        TCPserverListenerThread.launch();
+        TCP_Listener = new sf::Thread(&TCP::ServerListener);
     } else {
+        TCP_Listener = new sf::Thread(&TCP::ClientListener);
         TCP::socket.connect(TCP::serverIp, TCP::port);
-        TCPclientListenerThread.launch();
     }
+
+    TCP_Listener->launch();
 
     signal(SIGINT, signalHandler);
 
     shutdown_handler = [&](int n) {
         if (n == 2) {
             TCP::quit = true;
-            if (str_mode == "server")
-                TCPserverListenerThread.terminate();
-            else
-                TCPclientListenerThread.terminate();
 
-            std::cout << "Terminated threads";
+            TCP_Listener->terminate();
+            delete TCP_Listener;
+            std::cout << std::endl
+                      << "Terminated threads" << std::endl;
+            this->~Application();
             exit(n);
         }
     };
@@ -95,30 +97,31 @@ int8_t Application::start() {
         return -1;
     }
     // end scaling
-    sf::Texture card;
-    card.loadFromFile(it[1].get_filename());
-    sf::Sprite c;
-    c.setTexture(card);
-    c.setPosition(30, 30);
+
+    // sf::Texture card;
+    // card.loadFromFile(it[1].get_filename());
+    // sf::Sprite c;
+    // c.setTexture(card);
+    // c.setPosition(30, 30);
+    const cardpack test(it[35], window.getSize());
+
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 TCP::quit = true;
-                if (str_mode == "server")
-                    TCPserverListenerThread.terminate();
-                else
-                    TCPclientListenerThread.terminate();
+                TCP_Listener->terminate();
+                delete TCP_Listener;
                 window.close();
             }
         }
-        if (str_mode == "server") {
-        } else {
-        }
+        // if (str_mode == "server") {
+        // } else {
+        // }
 
         window.clear();
         window.draw(background);
-        window.draw(c);
+        window.draw(test);
         window.display();
 
         if (str_mode == "server") {

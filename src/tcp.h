@@ -5,9 +5,9 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
 #include <cmath>
+#include <ctime>
 #include <iostream>
 #include <string>
-#include <ctime>
 
 namespace TCP {
 sf::IpAddress serverIp;
@@ -29,7 +29,7 @@ void ServerListener() {
     listener.accept(socket);
     std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
     connected = true;
-    
+
     listen(quit, clientPacket, globalMutex, socket, dt);
 }
 

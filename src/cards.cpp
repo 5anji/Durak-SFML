@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <random>
 
 Cards::Cards(uint8_t trump)
         : trump(trump) {
@@ -20,5 +21,11 @@ Card Cards::operator[](uint8_t index) {
 }
 
 inline void Cards::randomize() {
-    std::random_shuffle(pack.begin(), pack.end());
+    auto engine = [] (int limit) {
+        std::random_device generator;
+        std::uniform_int_distribution distribution(0, limit);
+
+        return distribution(generator);
+    };
+    std::random_shuffle(pack.begin(), pack.end(), engine);
 }
