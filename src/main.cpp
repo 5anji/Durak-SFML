@@ -1,9 +1,13 @@
 #include "../libs/isNumber.h"
 #include "../libs/str2int.h"
 #include "app.h"
+#include "valid_input.h"
 
 int main(int argc, const char** argv) {
     uint16_t width(1024), height(768);
+    std::string mode;
+    sf::IpAddress ip;
+    bool checkers[2] = {false, false};
 
     if (argc > 0) {
         for (uint8_t i = 1; i < static_cast<uint8_t>(argc); i++) {
@@ -36,11 +40,32 @@ int main(int argc, const char** argv) {
                 break;
             }
             case str2int("-t"):
-            case str2int("--type"):
-                break;
+            case str2int("--type"): {
+                if ((i + 1) < argc) {
+                    std::string input = argv[i + 1];
+                    std::transform(input.begin(), input.end(), input.begin(), ::tolower);
+                    if (input == "server" || input == "client") {
+                        mode = input;
+                        checkers[0] = true;
+                    } else {
+                        std::cout << "Wrong option" << std::endl;
+                    }
+
+                } else {
+                    std::cout << "Invalid expression, requires 1 more argument" << std::endl;
+                }
+            } break;
             case str2int("-i"):
-            case str2int("--ip"):
-                break;
+            case str2int("--ip"): {
+                if ((i + 1) < argc) {
+                    std::string input = argv[i + 1];
+                    ip = input;
+                    checkers[1] = true;
+
+                } else {
+                    std::cout << "Invalid expression, requires 1 more argument" << std::endl;
+                }
+            } break;
             case str2int("-h"):
             case str2int("--help"): {
                 std::cout << "Usage:" << std::endl
@@ -57,6 +82,8 @@ int main(int argc, const char** argv) {
         }
     }
 
+    validate_input(mode, ip, checkers[0], checkers[1]);
+
     Application app(width, height);
-    return app.start();
+    return app.start(mode, ip);
 }

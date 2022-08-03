@@ -3,7 +3,6 @@
 #include "cards.h"
 #include "tcp.h"
 #include "ui/cardpack.h"
-#include "valid_input.h"
 
 #include <cmath>
 #include <csignal>
@@ -25,22 +24,16 @@ Application::Application(uint16_t width, uint16_t height)
 }
 
 // Starting the main window
-int8_t Application::start() {
-    std::string str_mode;
-
-    validate_input(str_mode, TCP::serverIp);
-
+int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
+    TCP::serverIp = serverIp;
     sf::Thread* TCP_Listener;
-
     sf::Clock Clock;
     sf::Clock PacketClock;
     int packet_counter = 0;
-
     sf::Time time;
-
     std::string command = "";
 
-    if (str_mode == "server") {
+    if (mode == "server") {
         TCP_Listener = new sf::Thread(&TCP::ServerListener);
     } else {
         TCP_Listener = new sf::Thread(&TCP::ClientListener);
@@ -64,7 +57,7 @@ int8_t Application::start() {
         }
     };
 
-    if (str_mode == "server") {
+    if (mode == "server") {
         while (!TCP::connected) {}
     }
 
@@ -72,7 +65,7 @@ int8_t Application::start() {
     time_t now;
     std::string dt;
 
-    sf::RenderWindow window(video_mode, std::string(title) + " [" + str_mode + "]", style, settings);
+    sf::RenderWindow window(video_mode, std::string(title) + " [" + mode + "]", style, settings);
     window.setFramerateLimit(48);
     window.setPosition(sf::Vector2<int>(20, 40));
 
@@ -115,7 +108,7 @@ int8_t Application::start() {
                 window.close();
             }
         }
-        // if (str_mode == "server") {
+        // if (mode == "server") {
         // } else {
         // }
 
@@ -124,7 +117,7 @@ int8_t Application::start() {
         window.draw(test);
         window.display();
 
-        if (str_mode == "server") {
+        if (mode == "server") {
             if (PacketClock.getElapsedTime().asSeconds() >= 1) {
                 packet_counter = 0;
                 PacketClock.restart();
