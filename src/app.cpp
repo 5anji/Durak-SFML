@@ -7,6 +7,7 @@
 #include <cmath>
 #include <csignal>
 #include <functional>
+#include <random>
 #include <thread>
 
 namespace {
@@ -56,14 +57,39 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
             exit(n);
         }
     };
-
     if (mode == "server") {
         while (!TCP::connected) {}
     }
 
-    Cards it(1);
-    time_t now;
-    std::string dt;
+    std::random_device* generator = new std::random_device();
+    std::uniform_int_distribution<uint8_t>* distribution = new std::uniform_int_distribution<uint8_t>(0, 3);
+    Cards* main_card_pack;
+
+    if (mode == "server") {
+        std::random_device r;
+        uint32_t seed = r();
+        uint8_t trump = (*distribution)(*generator);
+        main_card_pack = new Cards(trump, seed);
+        sf::Packet send_packet;
+        send_packet << seed << trump;
+        sf::TcpListener listener;
+        listener.listen(55001);
+        sf::TcpSocket socket;
+        listener.accept(socket);
+        socket.send(send_packet);
+    } else {
+        sf::Packet receive_packet;
+        sf::TcpSocket socket;
+        socket.connect(TCP::serverIp, 55001);
+        std::size_t received = 0;
+        socket.receive(receive_packet);
+        uint32_t seed;
+        uint8_t trump;
+        receive_packet >> seed >> trump;
+        main_card_pack = new Cards(trump, seed);
+    }
+    delete distribution;
+    delete generator;
 
     sf::RenderWindow window(video_mode, std::string(title) + " [" + mode + "]", style, settings);
     window.setFramerateLimit(48);
@@ -91,12 +117,10 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
     }
     // end scaling
 
-    // sf::Texture card;
-    // card.loadFromFile(it[1].get_filename());
-    // sf::Sprite c;
-    // c.setTexture(card);
-    // c.setPosition(30, 30);
-    const cardpack test(it[35], window.getSize());
+    bool* client_pack_recieved = new bool(false);
+    cardpack side_card_pack((*main_card_pack)[35], window.getSize());
+
+    delete client_pack_recieved;
 
     while (window.isOpen()) {
         sf::Event event;
@@ -108,24 +132,16 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
                 window.close();
             }
         }
-        // if (mode == "server") {
-        // } else {
-        // }
-
-        window.clear();
-        window.draw(background);
-        window.draw(test);
-        window.display();
 
         if (mode == "server") {
             if (PacketClock.getElapsedTime().asSeconds() >= 1) {
                 packet_counter = 0;
                 PacketClock.restart();
             } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33) > packet_counter) {
-                now = ::time(0);
-                dt = ctime(&now);
+                // now = ::time(0);
+                // dt = ctime(&now);
 
-                TCP::serverPacket << dt;
+                // TCP::serverPacket << main_card_pack;
                 TCP::ServerSend();
 
                 packet_counter++;
@@ -140,6 +156,11 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
                 packet_counter++;
             }
         }
+
+        window.clear();
+        window.draw(background);
+        window.draw(side_card_pack);
+        window.display();
 
         time = Clock.restart();
     }

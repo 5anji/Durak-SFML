@@ -1,4 +1,5 @@
 #pragma once
+#include <SFML/Network/Packet.hpp>
 #include <cstdint>
 #include <string>
 
@@ -16,5 +17,6 @@ public:
     uint8_t get_priority();
     uint8_t get_suit();
     std::string get_filename();
+    friend sf::Packet& operator<<(sf::Packet&, const Card&);
     bool operator<(Card&);
 };

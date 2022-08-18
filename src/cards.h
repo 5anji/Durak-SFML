@@ -3,12 +3,13 @@
 
 #include <vector>
 
-class Cards {
-    std::vector<Card> pack;
+struct Cards {
     uint8_t trump;
-
-public:
-    Cards(uint8_t);
+    uint64_t seed;
+    std::vector<Card> pack;
+    Cards(uint8_t, uint64_t);
     Card operator[](uint8_t);
+    friend sf::Packet& operator<<(sf::Packet&, const Cards&);
+
     inline void randomize();
 };
