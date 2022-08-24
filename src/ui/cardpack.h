@@ -11,7 +11,7 @@ class cardpack : public sf::Drawable {
     sf::Texture card_texture, trump_texture;
 
 public:
-    cardpack(Card trump_card, sf::Vector2<uint32_t> window_size) {
+    cardpack(Card* trump_card, sf::Vector2<uint32_t> window_size) {
         card_texture.setSmooth(true);
         trump_texture.setSmooth(true);
 
@@ -30,7 +30,7 @@ public:
         } else {
             exit(-1);
         }
-        if (trump_texture.loadFromFile(trump_card.get_filename())) {
+        if (trump_texture.loadFromFile(trump_card->get_filename())) {
             texture_size = trump_texture.getSize();
             float ScaleX = (static_cast<float>(window_size.x - 80) / 7.5) / static_cast<float>(texture_size.x);
             back_card.setTexture(trump_texture);

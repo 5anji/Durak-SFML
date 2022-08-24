@@ -3,6 +3,7 @@
 #include "cards.h"
 #include "tcp.h"
 #include "ui/cardpack.h"
+#include "ui/image_button.h"
 
 #include <cmath>
 #include <csignal>
@@ -61,36 +62,6 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
         while (!TCP::connected) {}
     }
 
-    std::random_device* generator = new std::random_device();
-    std::uniform_int_distribution<uint8_t>* distribution = new std::uniform_int_distribution<uint8_t>(0, 3);
-    Cards* main_card_pack;
-
-    if (mode == "server") {
-        std::random_device r;
-        uint32_t seed = r();
-        uint8_t trump = (*distribution)(*generator);
-        main_card_pack = new Cards(trump, seed);
-        sf::Packet send_packet;
-        send_packet << seed << trump;
-        sf::TcpListener listener;
-        listener.listen(55001);
-        sf::TcpSocket socket;
-        listener.accept(socket);
-        socket.send(send_packet);
-    } else {
-        sf::Packet receive_packet;
-        sf::TcpSocket socket;
-        socket.connect(TCP::serverIp, 55001);
-        std::size_t received = 0;
-        socket.receive(receive_packet);
-        uint32_t seed;
-        uint8_t trump;
-        receive_packet >> seed >> trump;
-        main_card_pack = new Cards(trump, seed);
-    }
-    delete distribution;
-    delete generator;
-
     sf::RenderWindow window(video_mode, std::string(title) + " [" + mode + "]", style, settings);
     window.setFramerateLimit(48);
     window.setPosition(sf::Vector2<int>(20, 40));
@@ -117,22 +88,75 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
     }
     // end scaling
 
-    bool* client_pack_recieved = new bool(false);
-    cardpack side_card_pack((*main_card_pack)[35], window.getSize());
+    // send unique seed for card pack generation
+    std::random_device* generator = new std::random_device();
+    std::uniform_int_distribution<uint8_t>* distribution = new std::uniform_int_distribution<uint8_t>(0, 3);
+    Cards* main_card_pack;
 
-    delete client_pack_recieved;
+    if (mode == "server") {
+        std::random_device r;
+        uint32_t seed = r();
+        uint8_t trump = (*distribution)(*generator);
+        main_card_pack = new Cards(trump, seed);
+        sf::Packet send_packet;
+        send_packet << seed << trump;
+        sf::TcpListener listener;
+        listener.listen(55001);
+        sf::TcpSocket socket;
+        listener.accept(socket);
+        socket.send(send_packet);
+    } else {
+        sf::Packet receive_packet;
+        sf::TcpSocket socket;
+        socket.connect(TCP::serverIp, 55001);
+        socket.receive(receive_packet);
+        uint32_t seed;
+        uint8_t trump;
+        receive_packet >> seed >> trump;
+        main_card_pack = new Cards(trump, seed);
+        socket.disconnect();
+    }
+    delete distribution;
+    delete generator;
+    // end sending
+
+    cardpack side_card_pack(&(*main_card_pack)[35], window.getSize());
+    Button_With_Image temp(&(*main_card_pack)[0], window.getSize(), sf::Vector2f{350, 370});
 
     while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
+        sf::Event Event;
+        while (window.pollEvent(Event)) {
+            switch (Event.type) {
+            case sf::Event::Closed: {
                 TCP::quit = true;
                 TCP_Listener->terminate();
                 delete TCP_Listener;
                 window.close();
+            } break;
+            case sf::Event::MouseMoved: {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                if (temp.clickable.getGlobalBounds().contains(mousePosF)) {
+                    temp.clickable.setFillColor(sf::Color(255, 255, 0, 63.f));
+                } else {
+                    temp.clickable.setFillColor(sf::Color(0, 0, 0, 0));
+                }
+
+            } break;
+            case sf::Event::MouseButtonPressed: {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+
+                if (temp.clickable.getGlobalBounds().contains(mousePosF)) {
+                    std::cout << "Clicked" << std::endl
+                              << std::flush;
+                }
+
+            } break;
+            default:
+                break;
             }
         }
-
         if (mode == "server") {
             if (PacketClock.getElapsedTime().asSeconds() >= 1) {
                 packet_counter = 0;
@@ -160,10 +184,12 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
         window.clear();
         window.draw(background);
         window.draw(side_card_pack);
+        window.draw(temp);
         window.display();
 
         time = Clock.restart();
     }
+
     return 0;
 }
 

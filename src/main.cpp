@@ -7,7 +7,7 @@ int main(int argc, const char** argv) {
     uint16_t width(1024), height(768);
     std::string mode;
     sf::IpAddress ip;
-    bool checkers[2] = {false, false};
+    bool checkers[3]{false, false, false};
 
     if (argc > 0) {
         for (uint8_t i = 1; i < static_cast<uint8_t>(argc); i++) {
@@ -55,6 +55,10 @@ int main(int argc, const char** argv) {
                     std::cout << "Invalid expression, requires 1 more argument" << std::endl;
                 }
             } break;
+            case str2int("-m"):
+            case str2int("--manual"):
+                checkers[2] = true;
+                break;
             case str2int("-i"):
             case str2int("--ip"): {
                 if ((i + 1) < argc) {
@@ -74,6 +78,7 @@ int main(int argc, const char** argv) {
                           << "\t-h, --help\t\t\t\tDisplay this help" << std::endl
                           << "\t-d, --display <width> <height>\t\tSet custom window size" << std::endl
                           << "\t-t, --type <server/client>\t\tSet player type" << std::endl
+                          << "\t-m, --manual\t\t\t\tManually input ip adress" << std::endl
                           << "\t-i, --ip <wi-fi IPv4 Address>\t\tSet IP Adress (for client mode)" << std::endl
                           << std::endl;
                 return 0;
@@ -82,7 +87,7 @@ int main(int argc, const char** argv) {
         }
     }
 
-    validate_input(mode, ip, checkers[0], checkers[1]);
+    validate_input(mode, ip, checkers[0], checkers[1], checkers[2]);
 
     Application app(width, height);
     return app.start(mode, ip);

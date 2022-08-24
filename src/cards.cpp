@@ -17,16 +17,8 @@ Cards::Cards(uint8_t trump, uint64_t seed)
     randomize();
 }
 
-Card Cards::operator[](uint8_t index) {
+Card& Cards::operator[](uint8_t index) {
     return pack[index];
-}
-
-sf::Packet& operator<<(sf::Packet& packet, const Cards& card_pack) {
-    for (auto&& i : card_pack.pack) {
-        packet << i;
-    }
-
-    return packet;
 }
 
 inline void Cards::randomize() {

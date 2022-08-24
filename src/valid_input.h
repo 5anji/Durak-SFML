@@ -2,7 +2,20 @@
 #include <SFML/Network.hpp>
 #include <iostream>
 
-void validate_input(std::string& mode, sf::IpAddress& serverIp, bool mode_check, bool ip_check) {
+void validate_input(std::string& mode, sf::IpAddress& serverIp, bool mode_check, bool is_manual, bool ip_check) {
+    auto ip_input = [](sf::IpAddress& ip, bool is_manual, bool ip_check) {
+        if (is_manual) {
+            if (!ip_check) {
+                do {
+                    std::cout << "Type the IPv4 address or name of the server to connect to: ";
+                    std::cin >> ip;
+                } while (ip == sf::IpAddress::None);
+            }
+        } else {
+            ip = sf::IpAddress::getLocalAddress();
+        }
+    };
+
     if (!mode_check) {
         char input(0);
     input_loop:
@@ -15,12 +28,7 @@ void validate_input(std::string& mode, sf::IpAddress& serverIp, bool mode_check,
         } else {
             if (tolower(input) == 'c') {
                 mode = "client";
-                if (!ip_check) {
-                    do {
-                        std::cout << "Type the IPv4 address or name of the server to connect to: ";
-                        std::cin >> serverIp;
-                    } while (serverIp == sf::IpAddress::None);
-                }
+                ip_input(serverIp, is_manual, ip_check);
             }
         }
 
@@ -28,14 +36,7 @@ void validate_input(std::string& mode, sf::IpAddress& serverIp, bool mode_check,
             mode = "server";
         }
     } else {
-        if (mode == "client") {
-            if (!ip_check) {
-                do {
-                    std::cout << "Type the IPv4 address or name of the server to connect to: ";
-                    std::cin >> serverIp;
-                } while (serverIp == sf::IpAddress::None);
-            }
-        }
+        if (mode == "client") ip_input(serverIp, is_manual, ip_check);
     }
     std::cout << "Selected input: " << mode << std::endl;
 }
