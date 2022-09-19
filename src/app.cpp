@@ -1,7 +1,7 @@
 #include "app.h"
 
-#include "cards.h"
-#include "tcp.h"
+#include "rules/cards.h"
+#include "server/tcp.h"
 #include "ui/cardpack.h"
 #include "ui/image_button.h"
 
