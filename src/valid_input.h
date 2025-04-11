@@ -2,12 +2,17 @@
 #include <SFML/Network.hpp>
 #include <iostream>
 
-void validate_input(std::string& mode, sf::IpAddress& serverIp, bool mode_check, bool is_manual, bool ip_check) {
+void validate_input(std::string& mode,
+                    sf::IpAddress& serverIp,
+                    bool mode_check,
+                    bool is_manual,
+                    bool ip_check) {
     auto ip_input = [](sf::IpAddress& ip, bool is_manual, bool ip_check) {
         if (is_manual) {
             if (!ip_check) {
                 do {
-                    std::cout << "Type the IPv4 address or name of the server to connect to: ";
+                    std::cout << "Type the IPv4 address or name of the server to connect "
+                                 "to: ";
                     std::cin >> ip;
                 } while (ip == sf::IpAddress::None);
             }
@@ -36,7 +41,9 @@ void validate_input(std::string& mode, sf::IpAddress& serverIp, bool mode_check,
             mode = "server";
         }
     } else {
-        if (mode == "client") ip_input(serverIp, is_manual, ip_check);
+        if (mode == "client") {
+            ip_input(serverIp, is_manual, ip_check);
+        }
     }
     std::cout << "Selected input: " << mode << std::endl;
 }

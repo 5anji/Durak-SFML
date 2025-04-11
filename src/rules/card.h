@@ -4,9 +4,9 @@
 #include <string>
 
 class Card {
-    const char* priority[9];
-    const char* suit[4];
-    const char* assets_directory;
+    char const* priority[9];
+    char const* suit[4];
+    char const* assets_directory;
 
     bool is_trump;
     uint8_t priority_i;
@@ -17,6 +17,6 @@ public:
     uint8_t get_priority();
     uint8_t get_suit();
     std::string get_filename();
-    friend sf::Packet& operator<<(sf::Packet&, const Card&);
+    friend sf::Packet& operator<<(sf::Packet&, Card const&);
     bool operator<(Card&);
 };

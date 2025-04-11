@@ -3,7 +3,7 @@
 #include "app.h"
 #include "valid_input.h"
 
-int main(int argc, const char** argv) {
+int main(int argc, char const** argv) {
     uint16_t width(1024), height(768);
     std::string mode;
     sf::IpAddress ip;
@@ -21,14 +21,17 @@ int main(int argc, const char** argv) {
                         uint16_t temp_width = std::stoi(square_width);
                         uint16_t temp_height = std::stoi(square_height);
 
-                        float ratio = static_cast<float>(temp_width) / static_cast<float>(temp_height);
-                        bool rep_condition = (temp_width >= 200) && (temp_height >= 200) && (0.5f < ratio) && (ratio < 2.f);
+                        float ratio = static_cast<float>(temp_width)
+                                      / static_cast<float>(temp_height);
+                        bool rep_condition = (temp_width >= 200) && (temp_height >= 200)
+                                             && (0.5f < ratio) && (ratio < 2.f);
 
                         if (rep_condition) {
                             width = temp_width;
                             height = temp_height;
                         } else {
-                            std::cout << "Inacceptable window size. Using 1024x768" << std::endl;
+                            std::cout << "Inacceptable window size. Using 1024x768"
+                                      << std::endl;
                         }
 
                     } else {
@@ -52,7 +55,8 @@ int main(int argc, const char** argv) {
                     }
 
                 } else {
-                    std::cout << "Invalid expression, requires 1 more argument" << std::endl;
+                    std::cout << "Invalid expression, requires 1 more argument"
+                              << std::endl;
                 }
             } break;
             case str2int("-m"):
@@ -67,7 +71,8 @@ int main(int argc, const char** argv) {
                     checkers[1] = true;
 
                 } else {
-                    std::cout << "Invalid expression, requires 1 more argument" << std::endl;
+                    std::cout << "Invalid expression, requires 1 more argument"
+                              << std::endl;
                 }
             } break;
             case str2int("-h"):
@@ -76,10 +81,14 @@ int main(int argc, const char** argv) {
                           << "\tDurak-SFML [OPTIONS...]" << std::endl
                           << "Options:" << std::endl
                           << "\t-h, --help\t\t\t\tDisplay this help" << std::endl
-                          << "\t-d, --display <width> <height>\t\tSet custom window size" << std::endl
-                          << "\t-t, --type <server/client>\t\tSet player type" << std::endl
+                          << "\t-d, --display <width> <height>\t\tSet custom window size"
+                          << std::endl
+                          << "\t-t, --type <server/client>\t\tSet player type"
+                          << std::endl
                           << "\t-m, --manual\t\t\t\tManually input ip adress" << std::endl
-                          << "\t-i, --ip <wi-fi IPv4 Address>\t\tSet IP Adress (for client mode)" << std::endl
+                          << "\t-i, --ip <wi-fi IPv4 Address>\t\tSet IP Adress (for "
+                             "client mode)"
+                          << std::endl
                           << std::endl;
                 return 0;
             }

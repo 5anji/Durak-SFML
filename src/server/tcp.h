@@ -11,7 +11,7 @@
 
 namespace TCP {
 sf::IpAddress serverIp;
-const int port = 50001;
+int const port = 50001;
 
 sf::TcpSocket socket;
 

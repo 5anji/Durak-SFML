@@ -1,6 +1,10 @@
 #pragma once
 
-inline void listen(bool quit, sf::Packet& packet, sf::Mutex& mutex, sf::TcpSocket& socket, std::string& dt) {
+inline void listen(bool quit,
+                   sf::Packet& packet,
+                   sf::Mutex& mutex,
+                   sf::TcpSocket& socket,
+                   std::string& dt) {
     while (!quit) {
         socket.receive(packet);
 

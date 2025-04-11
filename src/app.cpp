@@ -3,6 +3,7 @@
 #include "rules/cards.h"
 #include "server/tcp.h"
 #include "ui/cardpack.h"
+#include "ui/handstack.h"
 #include "ui/image_button.h"
 
 #include <cmath>
@@ -13,7 +14,9 @@
 
 namespace {
 std::function<void(int)> shutdown_handler;
-void signalHandler(int n) { shutdown_handler(n); }
+void signalHandler(int n) {
+    shutdown_handler(n);
+}
 }  // namespace
 
 // Creating the object
@@ -52,8 +55,7 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
 
             TCP_Listener->terminate();
             delete TCP_Listener;
-            std::cout << std::endl
-                      << "Terminated threads" << std::endl;
+            std::cout << std::endl << "Terminated threads" << std::endl;
             this->~Application();
             exit(n);
         }
@@ -62,7 +64,10 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
         while (!TCP::connected) {}
     }
 
-    sf::RenderWindow window(video_mode, std::string(title) + " [" + mode + "]", style, settings);
+    sf::RenderWindow window(video_mode,
+                            std::string(title) + " [" + mode + "]",
+                            style,
+                            settings);
     window.setFramerateLimit(48);
     window.setPosition(sf::Vector2<int>(20, 40));
 
@@ -78,8 +83,10 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
         texture_size = texture.getSize();
         window_size = window.getSize();
 
-        float ScaleX = static_cast<float>(window_size.x) / static_cast<float>(texture_size.x);
-        float ScaleY = static_cast<float>(window_size.y) / static_cast<float>(texture_size.y);
+        float ScaleX =
+                static_cast<float>(window_size.x) / static_cast<float>(texture_size.x);
+        float ScaleY =
+                static_cast<float>(window_size.y) / static_cast<float>(texture_size.y);
 
         background.setTexture(texture);
         background.setScale(ScaleX, ScaleY);
@@ -90,7 +97,8 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
 
     // send unique seed for card pack generation
     std::random_device* generator = new std::random_device();
-    std::uniform_int_distribution<uint8_t>* distribution = new std::uniform_int_distribution<uint8_t>(0, 3);
+    std::uniform_int_distribution<uint8_t>* distribution =
+            new std::uniform_int_distribution<uint8_t>(0, 3);
     Cards* main_card_pack;
 
     if (mode == "server") {
@@ -121,7 +129,10 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
     // end sending
 
     cardpack side_card_pack(&(*main_card_pack)[35], window.getSize());
-    Button_With_Image temp(&(*main_card_pack)[0], window.getSize(), sf::Vector2f{350, 370});
+    Button_With_Image temp(&(*main_card_pack)[0],
+                           window.getSize(),
+                           sf::Vector2f{350, 370});
+    // handstack temp(6, window_size);
 
     while (window.isOpen()) {
         sf::Event Event;
@@ -135,7 +146,8 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
             } break;
             case sf::Event::MouseMoved: {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x),
+                                       static_cast<float>(mousePos.y));
                 if (temp.clickable.getGlobalBounds().contains(mousePosF)) {
                     temp.clickable.setFillColor(sf::Color(255, 255, 0, 63.f));
                 } else {
@@ -145,11 +157,11 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
             } break;
             case sf::Event::MouseButtonPressed: {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x),
+                                       static_cast<float>(mousePos.y));
 
                 if (temp.clickable.getGlobalBounds().contains(mousePosF)) {
-                    std::cout << "Clicked" << std::endl
-                              << std::flush;
+                    std::cout << "Clicked" << std::endl << std::flush;
                 }
 
             } break;
@@ -161,7 +173,8 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
             if (PacketClock.getElapsedTime().asSeconds() >= 1) {
                 packet_counter = 0;
                 PacketClock.restart();
-            } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33) > packet_counter) {
+            } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33)
+                       > packet_counter) {
                 // now = ::time(0);
                 // dt = ctime(&now);
 
@@ -174,7 +187,8 @@ int8_t Application::start(std::string& mode, sf::IpAddress& serverIp) {
             if (PacketClock.getElapsedTime().asSeconds() >= 1) {
                 packet_counter = 0;
                 PacketClock.restart();
-            } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33) > packet_counter) {
+            } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33)
+                       > packet_counter) {
                 // TCP::clientPacket << ' ';
                 // TCP::ClientSend();
                 packet_counter++;

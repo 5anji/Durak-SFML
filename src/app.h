@@ -10,8 +10,8 @@ class Application {
     sf::ContextSettings settings;
     sf::VideoMode video_mode;
     uint8_t style;
-    const char* title;
-    const char* cards_directory;
+    char const* title;
+    char const* cards_directory;
 
 public:
     Application(uint16_t, uint16_t);

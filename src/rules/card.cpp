@@ -26,7 +26,7 @@ std::string Card::get_filename() {
     return str;
 }
 
-sf::Packet& operator<<(sf::Packet& packet, const Card& card) {
+sf::Packet& operator<<(sf::Packet& packet, Card const& card) {
     packet << card.priority;
     packet << card.suit;
     packet << card.assets_directory;
