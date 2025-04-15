@@ -15,6 +15,6 @@ class Application {
 
 public:
     Application(uint16_t, uint16_t);
-    int8_t start(std::string&, sf::IpAddress&);
+    int8_t start(std::string&);
     ~Application();
 };

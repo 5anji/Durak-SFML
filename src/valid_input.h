@@ -3,7 +3,7 @@
 #include <iostream>
 
 void validate_input(std::string& mode,
-                    sf::IpAddress& serverIp,
+                    // sf::IpAddress& serverIp,
                     bool mode_check,
                     bool is_manual,
                     bool ip_check) {

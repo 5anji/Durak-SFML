@@ -2,6 +2,8 @@
 
 #include "../rules/cards.h"
 
+#include <cstddef>
+
 cardpack::cardpack(Card* trump_card, sf::Vector2<uint32_t> window_size) {
     card_texture.setSmooth(true);
     trump_texture.setSmooth(true);
@@ -11,15 +13,14 @@ cardpack::cardpack(Card* trump_card, sf::Vector2<uint32_t> window_size) {
 
         float ScaleX = (static_cast<float>(window_size.x - 80) / 7.5)
                        / static_cast<float>(texture_size.x);
+        sf::Sprite back_card(card_texture);
+        back_card.setScale({ScaleX, ScaleX});
 
-        back_card.setTexture(card_texture);
-        back_card.setScale(ScaleX, ScaleX);
-
-        for (size_t i = 0; i < 3; i++) {
+        for (std::size_t i = 0; i < 3; i++) {
             back_card.setPosition(
-                    (static_cast<float>(window_size.x - texture_size.x * ScaleX) / 7.5),
+                    {(static_cast<float>(window_size.x - texture_size.x * ScaleX) / 7.5f),
                     (static_cast<float>(window_size.y) / 2 - 10 + i * 10
-                     - texture_size.y * ScaleX / 2));
+                     - texture_size.y * ScaleX / 2)});
             cards.push_back(back_card);
         }
     } else {
@@ -29,12 +30,13 @@ cardpack::cardpack(Card* trump_card, sf::Vector2<uint32_t> window_size) {
         texture_size = trump_texture.getSize();
         float ScaleX = (static_cast<float>(window_size.x - 80) / 7.5)
                        / static_cast<float>(texture_size.x);
-        back_card.setTexture(trump_texture);
-        back_card.setScale(ScaleX, ScaleX);
-        back_card.setTexture(trump_texture);
-        back_card.setRotation(90);
-        back_card.setPosition(back_card.getPosition().x + texture_size.y * ScaleX + 10,
-                              window_size.y / 2 - texture_size.x * ScaleX / 2);
+        sf::Sprite back_card(trump_texture);
+        // back_card.setTexture(trump_texture);
+        back_card.setScale({ScaleX, ScaleX});
+        // back_card.setTexture(trump_texture);
+        back_card.setRotation(sf::degrees(90));
+        back_card.setPosition({back_card.getPosition().x + texture_size.y * ScaleX + 10,
+                              window_size.y / 2 - texture_size.x * ScaleX / 2});
         cards.push_front(back_card);
     } else {
         exit(-1);
@@ -42,7 +44,7 @@ cardpack::cardpack(Card* trump_card, sf::Vector2<uint32_t> window_size) {
 }
 
 void cardpack::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    for (auto&& i : cards) {
+    for (auto const& i : cards) {
         target.draw(i, states);
     }
 }

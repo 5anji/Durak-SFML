@@ -14,19 +14,15 @@ Cards::Cards(uint8_t trump, uint64_t seed)
         }
     }
 
-    randomize();
+    // randomize();
+
+    std::default_random_engine engine(seed);
+    std::shuffle(pack.begin(), pack.end(), engine);
 }
 
 Card& Cards::operator[](uint8_t index) {
     return pack[index];
 }
 
-inline void Cards::randomize() {
-    auto engine = [&](int limit) {
-        std::default_random_engine generator(seed);
-        std::uniform_int_distribution distribution(0, limit);
-
-        return distribution(generator);
-    };
-    std::random_shuffle(pack.begin(), pack.end(), engine);
-}
+// inline void Cards::randomize() {
+// }

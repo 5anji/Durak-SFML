@@ -24,9 +24,9 @@ Button::Button(sf::Vector2<float> size,
     text.setFillColor(text_color);
     text.setCharacterSize(font_size);
     sf::FloatRect textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width / 2,
-                   textRect.top + textRect.height / 2);
-    text.setPosition(position.x + size.x / 2, position.y + size.y / 2);
+    text.setOrigin(
+            {textRect.left + textRect.width / 2, textRect.top + textRect.height / 2});
+    text.setPosition({position.x + size.x / 2, position.y + size.y / 2});
 }
 
 void Button::draw(sf::RenderTarget& target, sf::RenderStates states) const {

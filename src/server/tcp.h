@@ -1,6 +1,4 @@
 #pragma once
-#include "listener.h"
-#include "sender.h"
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
@@ -21,6 +19,34 @@ sf::Packet clientPacket;
 std::string dt;
 bool quit = false;
 bool connected = false;
+
+inline void listen(bool quit,
+                   sf::Packet& packet,
+                   sf::Mutex& mutex,
+                   sf::TcpSocket& socket,
+                   std::string& dt) {
+    while (!quit) {
+        socket.receive(packet);
+
+        while (!packet.endOfPacket()) {
+            mutex.lock();
+            packet >> dt;
+            std::cout << dt;
+            mutex.unlock();
+        }
+
+        packet.clear();
+    }
+}
+
+inline void send(sf::Packet& packet, sf::Mutex& mutex, sf::TcpSocket& socket) {
+    if (packet.getDataSize() > 0) {
+        mutex.lock();
+        socket.send(packet);
+        packet.clear();
+        mutex.unlock();
+    }
+}
 
 void ServerListener() {
     std::cout << "Listening for clients." << std::endl;

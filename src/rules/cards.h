@@ -10,5 +10,5 @@ struct Cards {
     Cards(uint8_t, uint64_t);
     Card& operator[](uint8_t);
 
-    inline void randomize();
+    // inline void randomize();
 };

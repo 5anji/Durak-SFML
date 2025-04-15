@@ -12,10 +12,10 @@ set(SOURCES
     src/app.cpp
     src/rules/card.cpp
     src/rules/cards.cpp
-    src/ui/button.cpp
+    # src/ui/button.cpp
     src/ui/cardpack.cpp
     src/ui/image_button.cpp
-    src/ui/handstack.cpp
+    # src/ui/handstack.cpp
 )
 
 # Add executable
@@ -29,9 +29,11 @@ target_compile_options(Durak-SFML PRIVATE
 
 # Find and link SFML
 # find_package(SFML 3.0 COMPONENTS graphics window system network REQUIRED)
+find_package(spdlog REQUIRED)
 target_link_libraries(Durak-SFML PRIVATE
     sfml-graphics
     sfml-window
     sfml-system
     sfml-network
+    spdlog::spdlog
 )

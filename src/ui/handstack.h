@@ -14,7 +14,7 @@ class handstack : public sf::Drawable {
 
 public:
     handstack(uint8_t, sf::Vector2<uint32_t>);
-    void operator+=(const Card&);
+    void operator+=(Card const&);
     Button_With_Image operator[](uint8_t);
     virtual void draw(sf::RenderTarget&, sf::RenderStates) const;
 };

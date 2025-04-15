@@ -3,11 +3,11 @@
 
 #include <SFML/Graphics.hpp>
 #include <list>
+#include <memory>
 
 class cardpack : public sf::Drawable {
     std::list<sf::Sprite> cards;
     sf::Vector2<uint32_t> texture_size;
-    sf::Sprite back_card;
     sf::Texture card_texture, trump_texture;
 
 public:
