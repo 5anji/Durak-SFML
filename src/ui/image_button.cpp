@@ -1,8 +1,8 @@
 #include "image_button.h"
 
-Button_With_Image::Button_With_Image(Card* card,
-                                     sf::Vector2<uint32_t> window_size,
-                                     sf::Vector2<float> position)
+ImageButton::ImageButton(Card* card,
+                         sf::Vector2<uint32_t> window_size,
+                         sf::Vector2<float> position)
         : position(position) {
     texture.setSmooth(true);
     if (texture.loadFromFile(card->get_filename())) {
@@ -20,7 +20,8 @@ Button_With_Image::Button_With_Image(Card* card,
         exit(-1);
     }
 }
-void Button_With_Image::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+
+void ImageButton::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     target.draw(*image, states);
     target.draw(clickable, states);
 }

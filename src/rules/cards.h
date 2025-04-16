@@ -9,6 +9,4 @@ struct Cards {
     std::vector<Card> pack;
     Cards(uint8_t, uint64_t);
     Card& operator[](uint8_t);
-
-    // inline void randomize();
 };

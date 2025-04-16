@@ -1,65 +1,81 @@
-#include "../libs/isNumber.h"
-#include "../libs/str2int.h"
 #include "app.h"
 // #include "valid_input.h"
+#include <spdlog/fmt/fmt.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+
 #include <algorithm>
 
+namespace {
+
+inline bool is_number(std::string_view str) {
+    for (char const& c : str) {
+        if (std::isdigit(c) == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+constexpr uint16_t str2int(char const* str, int h = 0) {
+    return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
+}
+
+inline constexpr auto help_text = R"(Usage:
+
+Durak-SFML [OPTIONS...]
+
+Options:
+    -h, --help                         Display this help
+    -d, --display <width> <height>     Set custom window size
+
+)";
+
+}  // namespace
+
 int main(int argc, char const** argv) {
+    auto logger = spdlog::stdout_color_mt("console");
     uint16_t width(1024), height(768);
-    std::string mode;
 
     if (argc > 0) {
         for (uint8_t i = 1; i < static_cast<uint8_t>(argc); i++) {
             switch (str2int(argv[i])) {
             case str2int("-d"):
             case str2int("--display"): {
-                if ((i + 2) < argc) {
-                    std::string square_width = argv[i + 1];
-                    std::string square_height = argv[i + 2];
-                    if (isNumber(square_width) && isNumber(square_height)) {
-                        uint16_t temp_width = std::stoi(square_width);
-                        uint16_t temp_height = std::stoi(square_height);
-
-                        float ratio = static_cast<float>(temp_width)
-                                      / static_cast<float>(temp_height);
-                        bool rep_condition = (temp_width >= 200) && (temp_height >= 200)
-                                             && (0.5f < ratio) && (ratio < 2.f);
-
-                        if (rep_condition) {
-                            width = temp_width;
-                            height = temp_height;
-                        } else {
-                            std::cout << "Inacceptable window size. Using 1024x768"
-                                      << std::endl;
-                        }
-
-                    } else {
-                        std::cout << "Invalid expression. Using 1024x768" << std::endl;
-                    }
-                } else {
-                    std::cout << "Invalid expression. Using 1024x768" << std::endl;
+                if (!((i + 2) < argc)) {
+                    spdlog::warn(
+                            "Not enough arguments for --display option. Using 1024x768");
                 }
+
+                if (!is_number(argv[i + 1]) || !is_number(argv[i + 2])) {
+                    spdlog::warn("Height or width is not number. Using 1024x768");
+                }
+                uint16_t temp_width = std::stoi(argv[i + 1]);
+                uint16_t temp_height = std::stoi(argv[i + 2]);
+
+                float ratio =
+                        static_cast<float>(temp_width) / static_cast<float>(temp_height);
+                bool rep_condition = (temp_width >= 200) && (temp_height >= 200)
+                                     && (0.5f < ratio) && (ratio < 2.f);
+
+                if (!rep_condition) {
+                    spdlog::warn("Inacceptable window size ratio. Using 1024x768");
+                }
+
+                width = temp_width;
+                height = temp_height;
                 break;
             }
             case str2int("-h"):
             case str2int("--help"): {
-                std::cout << "Usage:" << std::endl
-                          << "\tDurak-SFML [OPTIONS...]" << std::endl
-                          << "Options:" << std::endl
-                          << "\t-h, --help\t\t\t\tDisplay this help" << std::endl
-                          << "\t-d, --display <width> <height>\t\tSet custom window size"
-                          << std::endl
-                          << std::endl;
+                fmt::print("{}", help_text);
                 return 0;
             }
             }
         }
     }
 
-    // validate_input(mode, ip, checkers[0], checkers[1], checkers[2]);
-
     Application app(width, height);
-    return app.start(mode);
+    spdlog::info("Starting UI");
+    return app.start();
 }

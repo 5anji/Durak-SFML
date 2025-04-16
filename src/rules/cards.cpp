@@ -14,8 +14,6 @@ Cards::Cards(uint8_t trump, uint64_t seed)
         }
     }
 
-    // randomize();
-
     std::default_random_engine engine(seed);
     std::shuffle(pack.begin(), pack.end(), engine);
 }
@@ -23,6 +21,3 @@ Cards::Cards(uint8_t trump, uint64_t seed)
 Card& Cards::operator[](uint8_t index) {
     return pack[index];
 }
-
-// inline void Cards::randomize() {
-// }

@@ -1,23 +1,17 @@
 #include "app.h"
 
 #include "rules/cards.h"
-// #include "server/tcp.h"
 #include "ui/cardpack.h"
-#include "ui/handstack.h"
+// #include "ui/handstack.h"
 #include "ui/image_button.h"
+
+#include <spdlog/spdlog.h>
 
 #include <cmath>
 #include <csignal>
 #include <functional>
 #include <random>
 #include <thread>
-
-namespace {
-std::function<void(int)> shutdown_handler;
-void signalHandler(int n) {
-    shutdown_handler(n);
-}
-}  // namespace
 
 // Creating the object
 Application::Application(uint16_t width, uint16_t height)
@@ -29,43 +23,9 @@ Application::Application(uint16_t width, uint16_t height)
 }
 
 // Starting the main window
-int8_t Application::start(std::string& mode) {
-    // TCP::serverIp = serverIp;
-    // sf::Thread* TCP_Listener;
-    // sf::Clock Clock;
-    // sf::Clock PacketClock;
-    // int packet_counter = 0;
-    sf::Time time;
-    std::string command = "";
-
-    // if (mode == "server") {
-    //     TCP_Listener = new sf::Thread(&TCP::ServerListener);
-    // } else {
-    //     TCP_Listener = new sf::Thread(&TCP::ClientListener);
-    //     TCP::socket.connect(TCP::serverIp, TCP::port);
-    // }
-
-    // TCP_Listener->launch();
-
-    signal(SIGINT, signalHandler);
-
-    shutdown_handler = [&](int n) {
-        if (n == 2) {
-            // TCP::quit = true;
-
-            // TCP_Listener->terminate();
-            // delete TCP_Listener;
-            std::cout << std::endl << "Terminated threads" << std::endl;
-            this->~Application();
-            exit(n);
-        }
-    };
-    // if (mode == "server") {
-    //     while (!TCP::connected) {}
-    // }
-
+int8_t Application::start() {
     sf::RenderWindow window(video_mode,
-                            std::string(title) + " [" + mode + "]",
+                            std::string(title),
                             style,
                             sf::State::Windowed,
                             settings);
@@ -97,54 +57,25 @@ int8_t Application::start(std::string& mode) {
     // end scaling
 
     // send unique seed for card pack generation
-    std::random_device* generator = new std::random_device();
-    std::uniform_int_distribution<uint8_t>* distribution =
-            new std::uniform_int_distribution<uint8_t>(0, 3);
-    Cards* main_card_pack;
+    std::random_device generator;
+    std::uniform_int_distribution<uint8_t> distribution(0, 3);
+    uint8_t trump = distribution(generator);
 
-    // if (mode == "server") {
-        std::random_device r;
-        uint32_t seed = r();
-        uint8_t trump = (*distribution)(*generator);
-        main_card_pack = new Cards(trump, seed);
-        // sf::Packet send_packet;
-        // send_packet << seed << trump;
-        // sf::TcpListener listener;
-        // listener.listen(55001);
-        // sf::TcpSocket socket;
-        // listener.accept(socket);
-        // socket.send(send_packet);
-    // } else {
-    //     sf::Packet receive_packet;
-    //     sf::TcpSocket socket;
-    //     socket.connect(TCP::serverIp, 55001);
-    //     socket.receive(receive_packet);
-    //     uint32_t seed;
-    //     uint8_t trump;
-    //     receive_packet >> seed >> trump;
-    //     main_card_pack = new Cards(trump, seed);
-    //     socket.disconnect();
-    // }
-    delete distribution;
-    delete generator;
-    // end sending
+    std::random_device r;
+    uint32_t seed = r();
+    std::unique_ptr<Cards> main_card_pack = std::make_unique<Cards>(trump, seed);
 
-    cardpack side_card_pack(&(*main_card_pack)[35], window.getSize());
-    Button_With_Image temp(&(*main_card_pack)[0],
-                           window.getSize(),
-                           sf::Vector2f{350, 370});
+    CardPack side_card_pack(&(*main_card_pack)[35], window.getSize());
+    ImageButton temp(&(*main_card_pack)[0], window.getSize(), sf::Vector2f{350, 370});
     // handstack temp(6, window_size);
 
     while (window.isOpen()) {
         std::optional<sf::Event> event;
         while ((event = window.pollEvent())) {
-            event->visit([&](const auto& e) {
+            event->visit([&](auto const& e) {
                 using T = std::decay_t<decltype(e)>;
 
                 if constexpr (std::is_same_v<T, sf::Event::Closed>) {
-                    // TCP::quit = true;
-                    // TCP_Listener->terminate();
-                    // delete TCP_Listener;
                     window.close();
                 } else if constexpr (std::is_same_v<T, sf::Event::MouseMoved>) {
                     sf::Vector2i mousePos = e.position;
@@ -160,37 +91,17 @@ int8_t Application::start(std::string& mode) {
                     sf::Vector2f mousePosF(static_cast<float>(mousePos.x),
                                            static_cast<float>(mousePos.y));
                     if (temp.clickable.getGlobalBounds().contains(mousePosF)) {
-                        std::cout << "Clicked" << std::endl << std::flush;
+                        spdlog::info("Clicked");
                     }
                 }
-                // Add more events as needed
             });
         }
-
-        // if (mode == "server") {
-        //     if (PacketClock.getElapsedTime().asSeconds() >= 1) {
-        //         packet_counter = 0;
-        //         PacketClock.restart();
-        //     } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33) > packet_counter) {
-        //         TCP::ServerSend();
-        //         packet_counter++;
-        //     }
-        // } else {
-        //     if (PacketClock.getElapsedTime().asSeconds() >= 1) {
-        //         packet_counter = 0;
-        //         PacketClock.restart();
-        //     } else if ((PacketClock.getElapsedTime().asMilliseconds() / 33) > packet_counter) {
-        //         packet_counter++;
-        //     }
-        // }
 
         window.clear();
         window.draw(*background);
         window.draw(side_card_pack);
         window.draw(temp);
         window.display();
-
-        // time = Clock.restart();
     }
 
     return 0;
